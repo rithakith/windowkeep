@@ -44,6 +44,16 @@ app.connect('activate', () => {
     window.set_visible_page_name('layouts');
     print('WINDOWKEEP_PREFS_PASS');
     if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            const row = find(window, widget => widget instanceof Adw.ExpanderRow && widget.title === 'Research workspace');
+            if (!row) return GLib.SOURCE_CONTINUE;
+            row.expanded = true;
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 400, () => {
+                GLib.file_set_contents(`${GLib.get_user_runtime_dir()}/windowkeep-prefs-ready`, 'ready');
+                return GLib.SOURCE_REMOVE;
+            });
+            return GLib.SOURCE_REMOVE;
+        });
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 3000, () => { window.set_visible_page_name('settings'); return GLib.SOURCE_REMOVE; });
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 7000, () => { window.set_visible_page_name('advanced'); return GLib.SOURCE_REMOVE; });
     }
@@ -52,4 +62,4 @@ app.connect('activate', () => {
         return GLib.SOURCE_REMOVE;
     });
 });
-app.run([]);
+await app.runAsync([]);

@@ -70,6 +70,12 @@ behavior to work.
 
 ## Find and manage saved layouts
 
+Expand **Saved layouts** in the panel to choose an inactive layout to load.
+
+![Expanded Saved layouts dropdown in the top panel](docs/saved-layouts-menu.png)
+
+Open **Manage saved layouts…** for the full library shown below.
+
 Search by name and sort by newest saved, oldest saved, last modified, or name.
 Expand a layout to rename, duplicate, export or delete it. Import accepts local
 JSON files and creates a new layout rather than overwriting an existing one.

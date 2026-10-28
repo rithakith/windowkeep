@@ -129,6 +129,8 @@ export async function run() {
         fresh.windows = (await capture('Research workspace', new Set(testWindows()))).windows;
         fresh.name = 'Research workspace';
         (await store.write(fresh));
+        if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS'))
+            await store.write({...fresh, id: GLib.uuid_string_random(), name: 'Writing project', login: 'documentation-previous-session'});
         Main.overview.hide();
         await Scripting.waitLeisure();
         ext.stateObj._indicator.menu.open();
@@ -138,6 +140,13 @@ export async function run() {
         await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/panel.png`);
         ext.stateObj._indicator.menu.close();
         if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
+            ext.stateObj._indicator.menu.open();
+            await ext.stateObj._refresh();
+            const saved = ext.stateObj._indicator.menu._getMenuItems().find(item => item.label?.text === 'Saved layouts');
+            saved.menu.open();
+            await Scripting.sleep(400);
+            await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/saved-layouts-menu.png`);
+            ext.stateObj._indicator.menu.close();
             for (const [type, filename] of [[0, 'logout-reminder'], [1, 'shutdown-reminder']]) {
                 await Main.endSessionDialog.OpenAsync([type, global.get_current_time(), 60, []], {
                     return_value() {},
@@ -156,6 +165,8 @@ export async function run() {
         prefsWindow.activate(global.get_current_time());
         await Scripting.sleep(400);
         await Scripting.waitLeisure();
+        if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS'))
+            await waitFor(() => Gio.File.new_for_path(`${GLib.get_user_runtime_dir()}/windowkeep-prefs-ready`).query_exists(null));
         await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/preferences.png`);
         if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
             await Scripting.sleep(3500);
