@@ -82,7 +82,7 @@ export default class WindowKeep extends Extension {
             let name = '';
             try { name = (await this._store.read(this._settings.get_string('last-profile'))).name; } catch (_) { /* New layout. */ }
             if (!this._settings) return;
-            this._reviewSave(name.startsWith('Before shutdown ') ? '' : name, false, type);
+            await this._reviewSave(name.startsWith('Before shutdown ') ? '' : name, false, type);
         }), this.gettext.bind(this));
         this._guard(() => this._refresh());
     }
@@ -166,8 +166,11 @@ export default class WindowKeep extends Extension {
         }
     }
 
-    _save(name, workspaceOnly = false) {
-        return this._commitSave(capture(name, workspaceOnly ? new Set(global.workspace_manager.get_active_workspace().list_windows()) : null));
+    async _save(name, workspaceOnly = false) {
+        const store = this._store;
+        const draft = await capture(name, workspaceOnly ? new Set(global.workspace_manager.get_active_workspace().list_windows()) : null, store.cancellable);
+        if (this._store !== store) throw new Error('WindowKeep disabled');
+        return this._commitSave(draft);
     }
 
     async _commitSave(draft) {
@@ -178,9 +181,17 @@ export default class WindowKeep extends Extension {
         return profile;
     }
 
-    _reviewSave(name, workspaceOnly = false, exitType = null) {
-        if (this._saveDialog) return;
-        const draft = capture(name || this.gettext('My workspace'), workspaceOnly ? new Set(global.workspace_manager.get_active_workspace().list_windows()) : null);
+    async _reviewSave(name, workspaceOnly = false, exitType = null) {
+        if (this._saveDialog || this._capturing) return;
+        const store = this._store;
+        this._capturing = store;
+        let draft;
+        try {
+            draft = await capture(name || this.gettext('My workspace'), workspaceOnly ? new Set(global.workspace_manager.get_active_workspace().list_windows()) : null, store.cancellable);
+        } finally {
+            if (this._capturing === store) this._capturing = null;
+        }
+        if (this._store !== store) return;
         const dialog = new ModalDialog.ModalDialog();
         this._saveDialog = dialog;
         const review = new SaveReview(draft, this.gettext.bind(this));
@@ -345,6 +356,7 @@ ${this.gettext('Closing these windows affects those layouts too.')}`});
         try { syncAutostart(false, this.path); }
         catch (error) { console.error(`WindowKeep: unable to remove login helper: ${error.message}`); }
         this._store.destroy();
+        this._capturing = null;
         this._saveDialog?.destroy();
         this._saveDialog = null;
         this._loginDialog?.destroy();

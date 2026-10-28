@@ -1,0 +1,5 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <path fill="#2e3436" fill-rule="evenodd" d="M2 2h20v9h-3V8H5v11h5v3H2zm3 3v1h14V5z"/>
+  <path fill="#2e3436" fill-rule="evenodd" d="M13 12h7l3 3v8H12V12zm2 2v3h4v-3zm0 6v3h5v-3z"/>
+</svg>

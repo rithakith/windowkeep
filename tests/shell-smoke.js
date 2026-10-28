@@ -31,12 +31,22 @@ export async function run() {
         throw new Error(`Extension failed: ${ext.error}`);
     await Scripting.createTestWindow({width: 640, height: 480});
     await Scripting.waitTestWindows();
-    const {capture, allWindows} = await import(`file://${root}/capture.js`);
+    const {capture, allWindows, commandLine, loginToken} = await import(`file://${root}/capture.js`);
     const {ProfileStore} = await import(`file://${root}/store.js`);
     const {RestoreManager} = await import(`file://${root}/restore.js`);
     const windows = allWindows();
     if (!windows.length) throw new Error('Test window was not captured');
     const w = windows[0];
+    if (loginToken() !== loginToken()) throw new Error('Session identity changed');
+    const argumentsSnapshot = await commandLine(w.get_pid(), '');
+    if (!argumentsSnapshot?.length) throw new Error('Async process argument capture failed');
+    const cancelledCapture = new Gio.Cancellable();
+    cancelledCapture.cancel();
+    let captureCancelled = false;
+    try { await capture('Cancelled capture', null, cancelledCapture); }
+    catch (_) { captureCancelled = true; }
+    if (!captureCancelled) throw new Error('Capture ignored cancellation');
+    print('WINDOWKEEP_ASYNC_CAPTURE_PASS');
     Main.wm.blockWorkspaceUpdates();
     try {
         while (global.workspace_manager.n_workspaces < 3)
@@ -45,7 +55,7 @@ export async function run() {
         w.move_resize_frame(true, 100, 100, 640, 480);
         await Scripting.waitLeisure();
         await waitFor(() => w.get_frame_rect().width > 0 && w.get_frame_rect().height > 0);
-        const profile = capture('Nested smoke');
+        const profile = await capture('Reference workspace');
         const saved = profile.windows.find(s => s.stableSequence === w.get_stable_sequence());
         if (saved.workspace !== 2) throw new Error('Inactive workspace not captured');
         const store = new ProfileStore();
@@ -73,7 +83,7 @@ export async function run() {
         appWindows[0].change_workspace_by_index(2, false);
         appWindows[1].move_to_monitor(1);
         await Scripting.waitLeisure();
-        const fresh = capture('Two monitors');
+        const fresh = await capture('Two monitors');
         fresh.windows = fresh.windows.filter(win => win.appId === 'org.example.WindowKeepTest.desktop');
         if (fresh.windows.length !== 2 || new Set(fresh.windows.map(win => win.monitor)).size !== 2)
             throw new Error(`Multi-monitor capture failed: ${JSON.stringify(fresh.windows)}`);
@@ -104,12 +114,27 @@ export async function run() {
         if (resetResult.state !== 'complete') throw new Error(`Unmaximize restore failed: ${JSON.stringify(resetResult)}`);
         resetRestore.destroy();
         print('WINDOWKEEP_STATE_PASS');
+        const stageDemoWindows = async () => {
+            if (!GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) return;
+            for (const [index, win] of testWindows().entries()) {
+                win.change_workspace(global.workspace_manager.get_active_workspace());
+                win.move_to_monitor(0);
+                win.unminimize();
+                win.move_resize_frame(true, 55 + index * 330, 90 + index * 100, 620, 460);
+                win.activate(global.get_current_time());
+            }
+            await Scripting.sleep(500);
+        };
+        await stageDemoWindows();
+        fresh.windows = (await capture('Research workspace', new Set(testWindows()))).windows;
         fresh.name = 'Research workspace';
         (await store.write(fresh));
         Main.overview.hide();
         await Scripting.waitLeisure();
         ext.stateObj._indicator.menu.open();
-        await Scripting.waitLeisure();
+        await ext.stateObj._refresh();
+        ext.stateObj._indicator.menu._getMenuItems().find(item => item.label?.text.startsWith('Research workspace'))?.menu.open();
+        await Scripting.sleep(400);
         await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/panel.png`);
         ext.stateObj._indicator.menu.close();
         if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
@@ -141,6 +166,7 @@ export async function run() {
         await new Promise((resolve, reject) => prefsProcess.wait_check_async(null, (proc, result) => {
             try { proc.wait_check_finish(result); resolve(); } catch (error) { reject(error); }
         }));
+        await stageDemoWindows();
         const cliSave = (await cli(root, 'save', 'D-Bus smoke')).trim();
         const listing = JSON.parse(await cli(root, 'list'));
         if (!listing.profiles.some(p => p.id === cliSave)) throw new Error('D-Bus save/list failed');
@@ -168,7 +194,8 @@ export async function run() {
         missingRestore.destroy();
         if (missingRestore.operation || cancelOp.signals.items.length || cancelOp.workspaceUpdatesBlocked && Main.wm._blockCount < 1) throw new Error('Cancellation cleanup failed');
         const panelBefore = (await store.list()).profiles.length;
-        ext.stateObj._reviewSave('Research workspace');
+        await stageDemoWindows();
+        await ext.stateObj._reviewSave('Research workspace');
         if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
             await Scripting.sleep(500);
             await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/save-review.png`);
@@ -203,7 +230,7 @@ export async function run() {
         fakeExit.contentLayout.destroy();
         print('WINDOWKEEP_EXIT_REVIEW_FLOW_PASS');
         const beforeSave = (await store.list()).profiles.length;
-        ext.stateObj._reviewSave('My research project', false, 0);
+        await ext.stateObj._reviewSave('My research project', false, 0);
         const reviewDialog = ext.stateObj._saveDialog;
         const review = reviewDialog._windowkeepReview;
         review.name.set_text('Reviewed research project');
@@ -232,7 +259,12 @@ export async function run() {
         ext.stateObj._loginDialog.buttonLayout.get_children()[0].emit('clicked', 1);
         if (ext.stateObj._loginDialog || ext.stateObj._restore.operation) throw new Error('Keep desktop unchanged failed');
         print('WINDOWKEEP_LOGIN_CHOOSER_PASS');
-        const project = capture('Research workspace', new Set(testWindows()));
+        if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
+            await store.remove(fresh.id);
+            for (const saved of (await store.list()).profiles)
+                if (saved.name === 'Reviewed research project') await store.remove(saved.id);
+        }
+        const project = await capture('Research workspace', new Set(testWindows()));
         (await store.write(project));
         const count = testWindows().length;
         if (!ext.stateObj._projects.state(project).active) throw new Error('Open saved layout is not active');
@@ -243,13 +275,18 @@ export async function run() {
         if (GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) {
             await ext.stateObj._refresh();
             ext.stateObj._indicator.menu.open();
+            await ext.stateObj._refresh();
+            ext.stateObj._indicator.menu._getMenuItems().find(item => item.label?.text.startsWith('Research workspace'))?.menu.open();
             await Scripting.sleep(400);
             await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/collapsed-layout.png`);
             ext.stateObj._indicator.menu.close();
+            await ext.stateObj._projects.resume(project.id);
+            await stageDemoWindows();
             await ext.stateObj._projectAction(project.id, true);
             await Scripting.sleep(400);
             await screenshot(`${GLib.getenv('WINDOWKEEP_REAL_SOURCE')}/docs/save-close.png`);
             ext.stateObj._closeDialog.buttonLayout.get_children()[0].emit('clicked', 1);
+            await ext.stateObj._projects.collapse(project.id);
         }
         await waitFor(() => testWindows().every(win => win.minimized));
         await ext.stateObj._projects.collapse(project.id);
@@ -280,7 +317,7 @@ export async function run() {
         print('WINDOWKEEP_SHUTDOWN_PROMPT_PASS');
         print('WINDOWKEEP_DBUS_LIFECYCLE_PASS');
         print(`WINDOWKEEP_LAUNCH_PASS ${JSON.stringify(launchedResult)}`);
-        (await store.remove(fresh.id));
+        if (!GLib.getenv('WINDOWKEEP_DOC_SCREENSHOTS')) (await store.remove(fresh.id));
         (await store.remove(profile.id));
         print(`WINDOWKEEP_SMOKE_PASS ${JSON.stringify(result)}`);
     } finally {

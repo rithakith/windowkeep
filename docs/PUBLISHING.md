@@ -62,7 +62,7 @@ unzip -l dist/windowkeep@rithakith.github.io.shell-extension.zip
 
 The isolated Shell test should exit 0 and print six PASS markers covering capture,
 launch, state, preferences, D-Bus/lifecycle and the shutdown reminder. The ZIP
-contains runtime JavaScript, metadata, license, schemas, the symbolic icon and the GJS CLI. It does
+contains runtime JavaScript, metadata, license, schema XML, the symbolic icon and the GJS CLI. It does
 not contain tests, build scripts, documentation images or design notes. Keep
 those in the source repository. Install and test this exact ZIP before submitting.
 

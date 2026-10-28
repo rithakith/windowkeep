@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import GioUnix from 'gi://GioUnix';
+import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -38,29 +39,32 @@ export function windowIdentity(w) {
         transient: Boolean(w.get_transient_for()),
     };
 }
+// Static identity for this Shell's module lifetime. It survives enable/disable,
+// but a new compositor process gets a fresh token without reading /proc.
+const SESSION_TOKEN = GLib.uuid_string_random();
 export function loginToken() {
-    // Stable sequences belong to one compositor process, not merely one boot.
-    try {
-        const [, boot] = GLib.file_get_contents('/proc/sys/kernel/random/boot_id');
-        const [, stat] = GLib.file_get_contents('/proc/self/stat');
-        const fields = new TextDecoder().decode(stat).split(') ').slice(1).join(') ').split(' ');
-        return `${new TextDecoder().decode(boot).trim()}:${fields[19]}`;
-    } catch (_) {
-        return '';
-    }
+    return SESSION_TOKEN;
 }
-export function commandLine(w, appId) {
+export async function commandLine(pid, appId, cancellable = null) {
     if (appId && GioUnix.DesktopAppInfo.new(appId))
         return null;
     try {
-        const [, bytes] = GLib.file_get_contents(`/proc/${w.get_pid()}/cmdline`);
+        const file = Gio.File.new_for_path(`/proc/${pid}/cmdline`);
+        const bytes = await new Promise((resolve, reject) => {
+            file.load_contents_async(cancellable, (source, result) => {
+                try { resolve(source.load_contents_finish(result)[1]); }
+                catch (error) { reject(error); }
+            });
+        });
         const args = new TextDecoder().decode(bytes).split('\0').filter(Boolean);
         return args.length ? args : null;
-    } catch (_) {
+    } catch (error) {
+        if (cancellable?.is_cancelled()) throw error;
+        // A window's process may exit or disallow access while being captured.
         return null;
     }
 }
-export function capture(name, selected = null) {
+export async function capture(name, selected = null, cancellable = null) {
     if (!(Meta.is_wayland_compositor?.() ?? true))
         throw new Error('WindowKeep requires a Wayland session');
     const outputs = monitors();
@@ -75,7 +79,7 @@ export function capture(name, selected = null) {
         const half = Math.abs(relative.width - 0.5) < 0.025 && Math.abs(relative.height - 1) < 0.025;
         return {
             id: GLib.uuid_string_random(), ...identity, type: w.get_window_type(), pid: w.get_pid(),
-            command: commandLine(w, identity.appId), workspace: w.get_workspace()?.index() ?? 0,
+            command: null, workspace: w.get_workspace()?.index() ?? 0,
             monitor: w.get_monitor(), absolute: {[layout]: r}, relative,
             maximized: w.get_maximize_flags?.() ?? w.get_maximized?.() ?? 0,
             tile: half && Math.abs(relative.x) < 0.025 ? 'left' : half && Math.abs(relative.x - 0.5) < 0.025 ? 'right' : 'normal',
@@ -83,10 +87,17 @@ export function capture(name, selected = null) {
             fullscreen: w.is_fullscreen(), minimized: w.minimized, stacking,
         };
     });
-    return {
+    const profile = {
         schemaVersion: 1, provider: 'shell-heuristic-v1', id: GLib.uuid_string_random(),
         name: name.trim(), createdAt: new Date().toISOString(), login: loginToken(), layout,
         monitors: outputs, workspaceCount: global.workspace_manager.n_workspaces,
         activeWorkspace: global.workspace_manager.get_active_workspace_index(), windows,
     };
+    // Snapshot geometry and identity before yielding; only process arguments need IO.
+    await Promise.all(windows.map(async saved => {
+        saved.command = await commandLine(saved.pid, saved.appId, cancellable);
+    }));
+    if (cancellable?.is_cancelled())
+        throw new Error('WindowKeep capture cancelled');
+    return profile;
 }

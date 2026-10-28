@@ -14,6 +14,8 @@ fi
 export XDG_DATA_HOME="$rig/data" XDG_CONFIG_HOME="$rig/config" XDG_CACHE_HOME="$rig/cache"
 if [ -n "${WINDOWKEEP_TEST_ZIP:-}" ]; then
     python3 -m zipfile -e "$WINDOWKEEP_TEST_ZIP" "$rig/data/gnome-shell/extensions/windowkeep@rithakith.github.io"
+    # GNOME's installer compiles schema XML locally rather than shipping binaries.
+    glib-compile-schemas --strict "$rig/data/gnome-shell/extensions/windowkeep@rithakith.github.io/schemas"
 else
     ln -s "$root" "$rig/data/gnome-shell/extensions/windowkeep@rithakith.github.io"
 fi

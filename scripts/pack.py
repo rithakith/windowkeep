@@ -13,7 +13,6 @@ files = [root / name for name in [
     'extension.js', 'prefs.js', 'capture.js', 'restore.js', 'model.js',
     'store.js', 'projects.js', 'saveReview.js', 'settings.js', 'login.js',
     'shutdownPrompt.js', 'metadata.json', 'LICENSE',
-    'schemas/gschemas.compiled',
     'schemas/org.gnome.shell.extensions.session-atlas.gschema.xml',
     'schemas/org.gnome.shell.extensions.windowkeep.gschema.xml',
     'icons/windowkeep-symbolic.svg', 'scripts/windowkeep',

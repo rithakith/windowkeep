@@ -38,7 +38,8 @@ export class Projects {
         const windows = this.members(profile);
         if (!windows.length)
             throw new Error('No original project windows remain open. Use Resume instead.');
-        const snapshot = capture(profile.name, new Set(windows));
+        const snapshot = await capture(profile.name, new Set(windows), this.store.cancellable);
+        if (this.destroyed) throw new Error('WindowKeep disabled');
         // Keep missing entries for future restore; update only known live members.
         const live = new Map(snapshot.windows.map(w => [w.stableSequence, w]));
         snapshot.windows = profile.windows.map(old => {

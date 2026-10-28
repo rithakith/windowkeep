@@ -1,26 +1,24 @@
 # WindowKeep
 
-**Save your workspace. Pick up where you left off.**
-
-| **Overview — features and screenshots** | [Architecture — code and design](docs/ARCHITECTURE.md) |
-| :--- | :--- |
 
 WindowKeep is a GNOME Shell extension for saving window arrangements across
 workspaces and monitors. Keep named layouts for different projects, choose what
 to include, and restore them from the top panel.
 
+| **Overview — features and screenshots** | [Architecture — code and design](docs/ARCHITECTURE.md) |
+| :--- | :--- |
+
+
 **GNOME 50 · Wayland · GPL-3.0-or-later**
 
-> WindowKeep restores window arrangements. Browser tabs, documents, unsaved work
-> and terminal contents depend on each application's own save and restore support.
 
 ## Your layouts, in one place
 
-Open the window-and-save icon in the top panel to capture your entire desktop or
+Open the WindowKeep icon in the top panel to capture your entire desktop or
 just the current workspace. **Active layouts** shows layouts with tracked open
 windows; **Saved layouts** keeps inactive layouts in a collapsed dropdown.
 
-![WindowKeep panel showing its save actions and layout groups](docs/panel.png)
+![Expanded active layout menu with Collapse and Save and close actions](docs/panel.png)
 
 | Action | What happens |
 | --- | --- |
@@ -33,9 +31,12 @@ windows; **Saved layouts** keeps inactive layouts in a collapsed dropdown.
 
 ### Collapse and Save and close
 
-![Collapsed layout status in the panel](docs/collapsed-layout.png)
+Collapse hides the windows, so the desktop becomes clear while the apps keep
+running. Expand the collapsed layout to resume it.
 
-![Save and close confirmation with shared-window warning](docs/save-close.png)
+![Expanded collapsed layout menu with Resume and Save and close actions](docs/collapsed-layout.png)
+
+![Short Save and close confirmation over the open demo windows](docs/save-close.png)
 
 
 
@@ -178,7 +179,8 @@ Extensions. Automated checks run against GNOME 50.5 with two virtual outputs. Ph
 Flatpak and real-login acceptance work remains documented in the
 [manual test matrix](docs/TESTING.md).
 Screenshots above are actual renders from the isolated test desktop, using test
-applications rather than personal windows.
+applications with sample project notes rather than personal windows. The expanded
+menus show the actions available for active and collapsed layouts.
 
 ## Privacy, automation and contributing
 

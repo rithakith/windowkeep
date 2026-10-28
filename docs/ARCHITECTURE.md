@@ -148,8 +148,7 @@ retries a Restore request that might have already launched apps.
 ![Advanced controls for launch waiting and process fallback](advanced.png)
 
 Command fallback is explicit opt-in, passes argv directly without shell
-interpolation and cannot restore process memory, cwd or environment. Treat
-imported commands as executable behavior, not passive window metadata.
+interpolation and cannot restore process memory, cwd or environment. Local saved commands are executable behavior. Imports discard command arrays and use installed desktop launchers.
 
 ## Exit review and lifecycle
 
