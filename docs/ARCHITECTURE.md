@@ -1,7 +1,6 @@
 # WindowKeep architecture
 
-| [Overview — features and screenshots](../README.md) | **Architecture — code and design** |
-| :--- | :--- |
+[Overview](../README.md) · **Architecture**
 
 WindowKeep runs inside GNOME Shell. It captures compositor-visible window
 metadata, persists JSON profiles and coordinates best-effort application launches

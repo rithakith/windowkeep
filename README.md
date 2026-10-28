@@ -5,8 +5,7 @@ WindowKeep is a GNOME Shell extension for saving window arrangements across
 workspaces and monitors. Keep named layouts for different projects, choose what
 to include, and restore them from the top panel.
 
-| **Overview — features and screenshots** | [Architecture — code and design](docs/ARCHITECTURE.md) |
-| :--- | :--- |
+**Overview** · [Architecture](docs/ARCHITECTURE.md)
 
 
 **GNOME 50 · Wayland · GPL-3.0-or-later**
@@ -197,7 +196,7 @@ Titles and saved command arguments may contain private information: inspect and
 redact exported layouts before sharing. There is no telemetry or networking code.
 
 For automation, use `scripts/windowkeep`; see the [CLI reference](docs/CLI.md).
-For implementation and development, open the [Architecture tab](docs/ARCHITECTURE.md).
+For implementation and development, open the [architecture guide](docs/ARCHITECTURE.md).
 For GitHub and GNOME Extensions submission, follow the
 [publishing guide](docs/PUBLISHING.md).
 
