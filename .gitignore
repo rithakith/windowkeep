@@ -1,0 +1,20 @@
+dist/
+__pycache__/
+*.pyc
+schemas/gschemas.compiled
+
+# Local agent/environment directories; never project source
+.agents/
+.codex/
+.aws/
+
+# Generated translation template (regenerate with make pot)
+po/*.pot
+# Local credentials and editor/OS artifacts
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
+*~

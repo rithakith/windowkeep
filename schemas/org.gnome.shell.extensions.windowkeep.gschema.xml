@@ -1,0 +1,13 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.windowkeep" path="/org/gnome/shell/extensions/windowkeep/">
+    <key name="layout-sort" type="u"><default>0</default><range min="0" max="4"/><summary>Saved layout sort order</summary></key>
+    <key name="preferences-page" type="s"><default>'layouts'</default><choices><choice value="layouts"/><choice value="settings"/><choice value="advanced"/></choices><summary>Page to open in preferences</summary></key>
+    <key name="ask-save-before-exit" type="b"><default>true</default><summary>Ask to save the layout in the logout, restart and shutdown confirmation dialog</summary></key>
+    <key name="last-profile" type="s"><default>''</default><summary>Last restored or saved profile ID</summary></key>
+    <key name="ask-at-login" type="b"><default>true</default><summary>Ask which layout to restore at login, with an option to keep the desktop unchanged</summary></key>
+    <key name="restore-at-login" type="b"><default>false</default><summary>Restore last profile at login using XDG autostart</summary></key>
+    <key name="allow-command-fallback" type="b"><default>false</default><summary>Allow unreliable process command fallback</summary></key>
+    <key name="restore-timeout" type="u"><default>30</default><range min="5" max="120"/><summary>Restore deadline in seconds</summary></key>
+    <key name="settings-migrated" type="b"><default>false</default><summary>Legacy preferences have been migrated to WindowKeep</summary></key>
+  </schema>
+</schemalist>

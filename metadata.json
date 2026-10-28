@@ -1,0 +1,11 @@
+{
+  "uuid": "windowkeep@rithakith.github.io",
+  "name": "WindowKeep",
+  "description": "Save window arrangements as named layouts and restore them from the top panel.\n\n• Save windows across all workspaces and monitors, or just the current workspace. Review live previews and choose which windows to include.\n• Restore window positions, sizes, workspace and monitor assignments, and saved window states. Reuse matching windows and reopen missing applications.\n• Collapse a layout to minimize its windows, then resume it later. Apps keep running while collapsed.\n• Save and close a layout’s windows, with confirmation and warnings about windows shared with other active layouts. Applications handle their own unsaved-work prompts.\n• Search, sort, rename, duplicate, delete, import and export saved layouts. Imports create a new layout and discard saved process commands; applications reopen through installed desktop launchers.\n• At login, choose a saved layout, restore the last layout automatically, or leave your desktop as it is.\n• Optionally offer to save before logout, restart or shutdown. Review and save cancels the pending exit so you can save without a countdown, then continue when ready.\n• Manage layouts through the command-line and D-Bus interfaces.\n\nRequires GNOME 50 on Wayland. Restoration is best effort: applications may limit window placement, identical windows can be difficult to distinguish, and native half-screen tiling is approximated by geometry.\n\nWindowKeep saves window arrangements, not application content. Browser tabs, documents, unsaved work and terminal contents depend on each application’s own restore support. There is no continuous autosave, and forced shutdown or power loss cannot show a save reminder.\n\nDocumentation, screenshots and bug reports:\nhttps://github.com/rithakith/windowkeep",
+  "shell-version": [
+    "50"
+  ],
+  "settings-schema": "org.gnome.shell.extensions.windowkeep",
+  "gettext-domain": "windowkeep",
+  "url": "https://github.com/rithakith/windowkeep"
+}

@@ -1,0 +1,16 @@
+name: Check and package
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: sudo apt-get update && sudo apt-get install -y gjs libglib2.0-bin
+      - run: make pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windowkeep
+          path: dist/*.zip

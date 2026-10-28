@@ -1,0 +1,9 @@
+<schemalist>
+  <schema id="org.gnome.shell.extensions.session-atlas" path="/org/gnome/shell/extensions/session-atlas/">
+    <key name="ask-save-before-exit" type="b"><default>true</default><summary>Ask to save the layout in the logout, restart and shutdown confirmation dialog</summary></key>
+    <key name="last-profile" type="s"><default>''</default><summary>Last restored or saved profile ID</summary></key>
+    <key name="restore-at-login" type="b"><default>false</default><summary>Restore last profile at login using XDG autostart</summary></key>
+    <key name="allow-command-fallback" type="b"><default>false</default><summary>Allow unreliable process command fallback</summary></key>
+    <key name="restore-timeout" type="u"><default>30</default><range min="5" max="120"/><summary>Restore deadline in seconds</summary></key>
+  </schema>
+</schemalist>

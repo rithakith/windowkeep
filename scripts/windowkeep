@@ -1,0 +1,75 @@
+#!@GJS@ -m
+// SPDX-License-Identifier: GPL-3.0-or-later
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import System from 'system';
+import {migrateSettings} from '../settings.js';
+
+function invoke(method, args = []) {
+    const reply = Gio.DBus.session.call_sync(
+        'org.gnome.Shell', '/org/gnome/Shell/Extensions/WindowKeep',
+        'org.gnome.Shell.Extensions.WindowKeep', method,
+        new GLib.Variant(`(${'s'.repeat(args.length)})`, args),
+        null, Gio.DBusCallFlags.NONE, 5000, null);
+    return reply.deep_unpack()[0] ?? null;
+}
+
+async function login() {
+    const directory = Gio.File.new_for_uri(import.meta.url).get_parent().get_parent();
+    const source = Gio.SettingsSchemaSource.new_from_directory(
+        directory.get_child('schemas').get_path(), Gio.SettingsSchemaSource.get_default(), false);
+    const settings = new Gio.Settings({settings_schema: source.lookup('org.gnome.shell.extensions.windowkeep', false)});
+    migrateSettings(settings, directory.get_child('schemas').get_path());
+    if (!settings.get_boolean('ask-at-login') && !settings.get_boolean('restore-at-login'))
+        return;
+    // Availability retry only. Never retry a Restore request, which may launch apps.
+    for (let attempt = 0; attempt < 60; attempt++) {
+        let ready = false;
+        try {
+            invoke('Status');
+            ready = true;
+        } catch (_) { /* The enabled extension may not have exported its object yet. */ }
+        if (ready) {
+            print(invoke('Login'));
+            return;
+        }
+        await new Promise(resolve => GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+            resolve();
+            return GLib.SOURCE_REMOVE;
+        }));
+    }
+    throw new Error('WindowKeep was not enabled within 60 seconds');
+}
+
+async function main(args) {
+    const counts = {list: 0, save: 1, restore: 1, status: 0, rename: 2, delete: 1, duplicate: 2, import: 1, export: 2, login: 0};
+    const [action, ...parameters] = args;
+    if (action === '--help' || action === '-h') {
+        print('WindowKeep — save and restore GNOME window layouts');
+        print('Usage: windowkeep ACTION [ARGS]');
+        print('Actions: list | save NAME | restore UUID | status | rename UUID NAME | delete UUID');
+        print('         duplicate UUID NAME | import PATH | export UUID PATH | login');
+        return;
+    }
+    if (!Object.hasOwn(counts, action) || parameters.length !== counts[action])
+        throw new Error('Invalid action or arguments; run windowkeep --help');
+    if (action === 'login') {
+        await login();
+        return;
+    }
+    const result = invoke(action[0].toUpperCase() + action.slice(1), parameters);
+    if (result !== null) {
+        try {
+            print(JSON.stringify(JSON.parse(result), null, 2));
+        } catch (_) {
+            print(result);
+        }
+    }
+}
+
+try {
+    await main(ARGV);
+} catch (error) {
+    printerr(`WindowKeep: ${error.message}`);
+    System.exit(1);
+}
