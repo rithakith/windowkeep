@@ -11,6 +11,17 @@ to include, and restore them from the top panel.
 **GNOME 50 · Wayland · GPL-3.0-or-later**
 
 
+## See it in action
+
+![Full WindowKeep walkthrough: saving, restoring and managing window layouts](docs/windowkeep-full-demo.gif)
+
+[Full walkthrough GIF · 2 min 17 sec](docs/windowkeep-full-demo.gif)
+
+Recorded in an isolated GNOME 50 desktop with real VS Code, Chrome and Text Editor
+windows. Chrome displays a PDF exported from a fresh Google Docs sample. The full
+walkthrough also covers layout management, export/import, login choices and the
+save-before-exit flow.
+
 ## Your layouts, in one place
 
 Open the WindowKeep icon in the top panel to capture your entire desktop or
