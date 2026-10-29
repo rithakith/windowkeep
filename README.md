@@ -15,7 +15,7 @@ to include, and restore them from the top panel.
 
 ![Full WindowKeep walkthrough: saving, restoring and managing window layouts](docs/windowkeep-full-demo.gif)
 
-[Full walkthrough GIF · 2 min 17 sec](docs/windowkeep-full-demo.gif)
+*Full walkthrough · 2 min 17 sec*
 
 Recorded in an isolated GNOME 50 desktop with real VS Code, Chrome and Text Editor
 windows. Chrome displays a PDF exported from a fresh Google Docs sample. The full
