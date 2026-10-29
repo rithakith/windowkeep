@@ -1,123 +1,118 @@
 # WindowKeep
 
-
 WindowKeep is a GNOME Shell extension for saving window arrangements across
 workspaces and monitors. Keep named layouts for different projects, choose what
 to include, and restore them from the top panel.
 
 **Overview** · [Architecture](docs/ARCHITECTURE.md)
 
-
 **GNOME 50 · Wayland · GPL-3.0-or-later**
 
+## Save a layout
 
-## See it in action
-
-![Full WindowKeep walkthrough: saving, restoring and managing window layouts](docs/windowkeep-full-demo.gif)
-
-*Full walkthrough · 2 min 17 sec*
-
-Recorded in an isolated GNOME 50 desktop with real VS Code, Chrome and Text Editor
-windows. Chrome displays a PDF exported from a fresh Google Docs sample. The full
-walkthrough also covers layout management, export/import, login choices and the
-save-before-exit flow.
-
-## Your layouts, in one place
-
-Open the WindowKeep icon in the top panel to capture your entire desktop or
-just the current workspace. **Active layouts** shows layouts with tracked open
-windows; **Saved layouts** keeps inactive layouts in a collapsed dropdown.
-
-![Expanded active layout menu with Collapse and Save and close actions](docs/panel.png)
-
-| Action | What happens |
-| --- | --- |
-| Save entire desktop… | Captures windows across workspaces and monitors, then opens review. |
-| Save this workspace… | Captures the current workspace's windows, then opens review. |
-| Collapse | Minimizes a layout's windows. Apps keep running and using resources. |
-| Resume | Reveals and restores a collapsed layout. Missing apps may be reopened. |
-| Save and close… | Saves first, then requests normal window closes. You handle any unsaved-work prompts. |
-| Load a saved layout | Reuses matching windows, launches missing apps, and attempts to restore their arrangement. |
-
-### Collapse and Save and close
-
-Collapse hides the windows, so the desktop becomes clear while the apps keep
-running. Expand the collapsed layout to resume it.
-
-![Expanded collapsed layout menu with Resume and Save and close actions](docs/collapsed-layout.png)
-
-![Short Save and close confirmation over the open demo windows](docs/save-close.png)
-
-
-
-Shared windows are flagged before closing. WindowKeep never force-kills apps.
-New windows are not automatically assigned to a project; save a fresh layout to
-include them. Multiple layouts may be active at once.
-
-## Review before saving
-
-1. Choose **Save entire desktop…** or **Save this workspace…**.
+1. Open WindowKeep in the top panel and choose **Save entire desktop…**.
 2. Give the layout a name.
 3. Review live previews grouped by workspace. Uncheck windows you do not need.
 4. Choose **Save layout**.
 
-![Live window previews, workspace groups and inclusion checkboxes](docs/save-review.png)
+![Save a desktop layout, name it and choose which windows to include](docs/demos/save-layout.gif)
 
 Unchecking a window leaves it open. Previews stay in memory; WindowKeep does not
 save screenshots of your windows. When a preview is unavailable, an app icon and
 fallback label are shown. Individual browser tabs cannot be selected separately.
 
-## Choose how to start your session
+### Save only the current workspace
 
-At login, select a saved layout and choose **Load layout**, or choose **Keep
-desktop as it is**. Selecting a row alone does not launch applications.
+Choose **Save this workspace…** to capture the windows on your current workspace.
+Review and name the layout in the same way.
 
-![Login chooser with separate selection and load actions](docs/login-chooser.png)
+![Save the current workspace as its own named layout](docs/demos/save-workspace.gif)
 
-The **At login** setting has three choices: **Do nothing**, **Ask which layout
-to load**, and **Restore last layout**. The extension must be enabled for login
-behavior to work.
+## Collapse and resume
 
-## Find and manage saved layouts
+**Active layouts** shows layouts with tracked open windows. Expand a layout and
+choose **Collapse** to minimize its windows together. Apps keep running and using
+resources. Choose **Resume** to bring the layout back.
 
-Expand **Saved layouts** in the panel to choose an inactive layout to load.
+![Collapse a layout to clear the desktop, then resume its windows](docs/demos/collapse-resume.gif)
 
-![Expanded Saved layouts dropdown in the top panel](docs/saved-layouts-menu.png)
+New windows are not automatically assigned to a layout; save a fresh layout to
+include them. Multiple layouts may be active at once.
 
-Open **Manage saved layouts…** for the full library shown below.
+## Restore an arrangement
 
-Search by name and sort by newest saved, oldest saved, last modified, or name.
-Expand a layout to rename, duplicate, export or delete it. Import accepts local
-JSON files and creates a new layout rather than overwriting an existing one.
+Load a saved layout to return matching windows to their saved positions, sizes,
+workspaces, monitors and window states. Restoration is best effort; applications
+may limit placement or make identical windows difficult to distinguish.
 
-![Saved layouts library with search, sort and management controls](docs/preferences.png)
+![Move the application windows, then restore their saved arrangement](docs/demos/restore-layout.gif)
+
+## Save and close
+
+Expand an active layout and choose **Save and close…**. Confirm to save the layout
+before requesting normal window closes. Shared windows are flagged before closing.
+Applications handle their own unsaved-work prompts; WindowKeep never force-kills
+apps.
+
+![Review the Save and close confirmation, cancel it, then confirm](docs/demos/save-close.gif)
+
+## Reopen a saved layout
+
+Expand **Saved layouts** in the panel and choose an inactive layout. WindowKeep
+reuses matching windows, launches missing apps and attempts to restore their
+arrangement.
+
+![Load an inactive layout to reopen Chrome, VS Code and Text Editor](docs/demos/reopen-apps.gif)
+
+WindowKeep restores window arrangements. Browser tabs, documents, unsaved work and
+terminal contents depend on each application's own save and restore support.
+
+## Find and manage layouts
+
+Open **Manage saved layouts…** for the full library. Search by name and sort by
+newest saved, oldest saved, last modified, or name. Expand a layout to rename,
+duplicate or delete it. Deletion asks for confirmation.
+
+![Rename, duplicate, search, sort and delete a saved layout](docs/demos/manage-layouts.gif)
 
 Dates and window counts help distinguish similar layouts. IDs are available under
-**Technical details**, rather than filling the main list. This library contains
-saved snapshots; live activity is shown in the panel's **Active layouts** section.
-Older layouts use their saved date for sorting until modification tracking is
-available from an edit.
+**Technical details**. The library contains saved snapshots; live activity is
+shown in the panel's **Active layouts** section.
+
+### Export and import
+
+Use the library's **Export** action and **Import saved layout (JSON)** control, or
+the command-line interface shown below. Import creates a new layout rather than
+overwriting an existing one, and discards saved process commands.
+
+![Export a layout as JSON and import it with a fresh ID through the CLI](docs/demos/export-import.gif)
+
+## Choose how to start your session
+
+In **Settings → At login**, choose **Do nothing**, **Ask which layout to load**, or
+**Restore last layout**. The extension must be enabled for login behavior to work.
+
+![Switch between the three At login settings](docs/demos/login-settings.gif)
+
+When asked at login, select a saved layout and choose **Load layout**, or choose
+**Keep desktop as it is**. Selecting a row alone does not launch applications.
+This clip previews the chooser without logging out.
+
+![Keep the current desktop, then select and load a layout in the login chooser](docs/demos/login-chooser.gif)
 
 ## Save before leaving
 
-Enable **Offer to save before leaving** for a reminder in GNOME's logout,
-restart and shutdown confirmation. **Review and save…** cancels the pending exit
-and opens the standalone review without a countdown. After saving, choose **Done**
-or explicitly continue with logout, shutdown or restart.
+Enable **Offer to save before leaving** for a reminder in GNOME's logout, restart
+and shutdown confirmation. **Review and save…** cancels the pending exit and opens
+review without a countdown. After saving, choose **Done** or explicitly continue
+with logout, shutdown or restart.
 
-![Save reminder in GNOME’s logout confirmation](docs/logout-reminder.png)
-
-![Save reminder in GNOME’s shutdown confirmation](docs/shutdown-reminder.png)
-
-The reminder asks **“Save your layout before leaving?”**. Choose **Review and
-save…** to select windows first, or use GNOME’s normal exit button to leave
-without a new WindowKeep save.
-
-![Settings page with login behavior and the save-before-leaving reminder](docs/settings.png)
+![Preview exit reminders, cancel the pending exit, review the windows and save](docs/demos/save-before-exit.gif)
 
 Closing the review does not log you out. A new save never overwrites an earlier
 layout, even when the name matches. Power loss, forced shutdown and commands that
-bypass GNOME's confirmation cannot show the reminder.
+bypass GNOME's confirmation cannot show the reminder. The recording cancels the
+exit confirmations; it does not log out or shut down the desktop.
 
 ## Advanced restoration options
 
@@ -125,12 +120,13 @@ bypass GNOME's confirmation cannot show the reminder.
 missing windows. It does not delay the start of restoration. A partial result
 names unresolved windows; it does not keep relaunching them blindly.
 
-![Advanced settings explaining application wait time and command fallback](docs/advanced.png)
+![Open Advanced settings to review application wait time and command fallback](docs/demos/advanced-options.gif)
 
 **Command fallback** is optional and disabled by default. It allows saved process
 arguments to run when no desktop launcher exists. Those arguments may open files
-or perform actions. Imported layouts discard process commands and use installed desktop launchers. They cannot reproduce the
-original working directory, environment or application memory.
+or perform actions. Imported layouts discard process commands and use installed
+desktop launchers. They cannot reproduce the original working directory,
+environment or application memory.
 
 ## Install
 
@@ -194,9 +190,10 @@ This first release targets GNOME 50. It has not yet been approved on GNOME
 Extensions. Automated checks run against GNOME 50.5 with two virtual outputs. Physical monitor,
 Flatpak and real-login acceptance work remains documented in the
 [manual test matrix](docs/TESTING.md).
-Screenshots above are actual renders from the isolated test desktop, using test
-applications with sample project notes rather than personal windows. The expanded
-menus show the actions available for active and collapsed layouts.
+The clips above are recorded from the real extension in an isolated GNOME 50.5
+Wayland desktop, using real VS Code, Chrome and Text Editor windows with sample
+content. Chrome displays a PDF exported from a fresh Google Docs sample. Actions
+are scripted; the application windows and their restoration are real.
 
 ## Privacy, automation and contributing
 
